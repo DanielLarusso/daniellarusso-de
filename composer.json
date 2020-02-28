@@ -2,7 +2,7 @@
     "type": "project",
     "license": "proprietary",
     "require": {
-        "php": "^7.2.5",
+        "php": "^7.4",
         "ext-ctype": "*",
         "ext-iconv": "*",
         "sensio/framework-extra-bundle": "^5.1",
@@ -44,12 +44,12 @@
     },
     "autoload": {
         "psr-4": {
-            "App\\": "src/"
+            "DanielLarusso\\": "src/"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "App\\Tests\\": "tests/"
+            "DanielLarusso\\Tests\\": "tests/"
         }
     },
     "replace": {
