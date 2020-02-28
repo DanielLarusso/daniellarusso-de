@@ -1,0 +1,5 @@
+maker:
+  # tell MakerBundle that all of your classes lives in an
+  # DanielLarusso namespace, instead of the default App
+  # (e.g. DanielLarusso\Entity\Article, DanielLarusso\Command\MyCommand, etc)
+  root_namespace: 'DanielLarusso'
