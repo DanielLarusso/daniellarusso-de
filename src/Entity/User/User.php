@@ -2,23 +2,21 @@
 
 namespace DanielLarusso\Entity\User;
 
+use DanielLarusso\Entity\AbstractEntity;
+use DanielLarusso\Entity\User\Security\Group as SecurityGroup;
+use DanielLarusso\Entity\User\Security\Role;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\UserInterface;
+use Symfony\Component\Validator\Constraints as Assert;
 
 /**
  * @ORM\Entity(repositoryClass="DanielLarusso\Repository\User\UserRepository")
  * @ORM\Table(name="user_users")
  * @ORM\HasLifecycleCallbacks()
  */
-class User implements UserInterface
+class User extends AbstractEntity implements UserInterface
 {
-    /**
-     * @ORM\Id()
-     * @ORM\GeneratedValue(strategy="UUID")
-     * @ORM\Column(type="string")
-     */
-    private ?string $id;
-
     /**
      * @ORM\Column(
      *     type="string",
@@ -27,6 +25,8 @@ class User implements UserInterface
      *     nullable=false,
      *     unique=true
      * )
+     * @Assert\NotBlank()
+     * @Assert\Email()
      */
     private string $email = '';
 
@@ -39,6 +39,24 @@ class User implements UserInterface
      * )
      */
     private string $password;
+
+    /**
+     * @var SecurityGroup[]|Collection
+     * @ORM\ManyToMany(
+     *     targetEntity="DanielLarusso\Entity\User\Security\Group",
+     *     inversedBy="users"
+     * )
+     * @ORM\JoinTable(
+     *     name="user_user_security_group_relations",
+     *     joinColumns={
+     *         @ORM\JoinColumn(name="user_id", referencedColumnName="id")
+     *     },
+     *     inverseJoinColumns={
+     *         @ORM\JoinColumn(name="group_id", referencedColumnName="id")
+     *     }
+     * )
+     */
+    private Collection $securityGroups;
 
     /**
      * @var bool
@@ -57,57 +75,9 @@ class User implements UserInterface
     private ?\DateTime $lastLogin;
 
     /**
-     * @var \DateTime
-     * @ORM\Column(
-     *     type="datetime",
-     *     name="updated_at",
-     *     nullable=false
-     * )
+     * @return string
      */
-    private \DateTime $updatedAt;
-
-    /**
-     * @var \DateTime
-     * @ORM\Column(
-     *     type="datetime",
-     *     name="created_at",
-     *     nullable=false
-     * )
-     */
-    private \DateTime $createdAt;
-
-    /**
-     * @ORM\PrePersist()
-     */
-    public function prePersist(): void
-    {
-        /** @var \DateTime $now */
-        $now = new \DateTime();
-
-        $this->setUpdatedAt($now);
-        $this->setCreatedAt($now);
-    }
-
-    /**
-     * @ORM\PreUpdate()
-     */
-    public function preUpdate(): void
-    {
-        $this->setUpdatedAt(new \DateTime());
-    }
-
-    /**
-     * @return int|null
-     */
-    public function getId(): ?int
-    {
-        return $this->id;
-    }
-
-    /**
-     * @return string|null
-     */
-    public function getEmail(): ?string
+    public function getEmail(): string
     {
         return $this->email;
     }
@@ -130,7 +100,7 @@ class User implements UserInterface
      */
     public function getUsername(): string
     {
-        return $this->email;
+        return $this->getEmail();
     }
 
     /**
@@ -138,16 +108,18 @@ class User implements UserInterface
      */
     public function getRoles(): array
     {
-        return ['ROLE_USER'];
-    }
+        /** @var array $roles */
+        $roles = ['ROLE_USER'];
 
-    /**
-     * @param array $roles
-     * @return $this
-     */
-    public function setRoles(array $roles): self
-    {
-        return $this;
+        /** @var SecurityGroup $group */
+        foreach ($this->getSecurityGroups() as $group) {
+            /** @var Role $role */
+            foreach ($group->getRoles() as $role) {
+                $roles[] = $role->getName();
+            }
+        }
+
+        return \array_unique($roles);
     }
 
     /**
@@ -165,6 +137,46 @@ class User implements UserInterface
     public function setPassword(string $password): self
     {
         $this->password = $password;
+
+        return $this;
+    }
+
+    /**
+     * @return SecurityGroup[]|Collection
+     */
+    public function getSecurityGroups()
+    {
+        return $this->securityGroups;
+    }
+
+    /**
+     * @param SecurityGroup $group
+     * @return $this
+     */
+    public function addSecurityGroup(SecurityGroup $group): self
+    {
+        if ($this->getSecurityGroups()->contains($group)) {
+            return $this;
+        }
+
+        $this->getSecurityGroups()->add($group);
+        $group->addUser($this);
+
+        return $this;
+    }
+
+    /**
+     * @param SecurityGroup $group
+     * @return $this
+     */
+    public function removeSecurityGroup(SecurityGroup $group): self
+    {
+        if (! $this->getSecurityGroups()->contains($group)) {
+            return $this;
+        }
+
+        $this->getSecurityGroups()->removeElement($group);
+        $group->removeUser($this);
 
         return $this;
     }
@@ -199,38 +211,6 @@ class User implements UserInterface
     public function setLastLogin(\DateTime $lastLogin): void
     {
         $this->lastLogin = $lastLogin;
-    }
-
-    /**
-     * @return \DateTime
-     */
-    public function getUpdatedAt(): \DateTime
-    {
-        return $this->updatedAt;
-    }
-
-    /**
-     * @param \DateTime $updatedAt
-     */
-    public function setUpdatedAt(\DateTime $updatedAt): void
-    {
-        $this->updatedAt = $updatedAt;
-    }
-
-    /**
-     * @return \DateTime
-     */
-    public function getCreatedAt(): \DateTime
-    {
-        return $this->createdAt;
-    }
-
-    /**
-     * @param \DateTime $createdAt
-     */
-    public function setCreatedAt(\DateTime $createdAt): void
-    {
-        $this->createdAt = $createdAt;
     }
 
     /**
