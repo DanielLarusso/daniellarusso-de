@@ -21,7 +21,7 @@ security:
                 authenticators:
                     - DanielLarusso\Security\LoginFormAuthenticator
             logout:
-                path: app_logout
+                path: security_logout_action
                 # where to redirect after logout
                 # target: app_any_route
 
