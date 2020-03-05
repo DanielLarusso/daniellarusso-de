@@ -2,6 +2,8 @@
 
 namespace DanielLarusso\Entity\User\Confirmation;
 
+use Doctrine\ORM\Mapping as ORM;
+
 /**
  * Class RegistrationConfirmation
  * @package DanielLarusso\Entity\User\Confirmation
