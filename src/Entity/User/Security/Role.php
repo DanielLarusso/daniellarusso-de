@@ -16,6 +16,7 @@ use Doctrine\ORM\Mapping as ORM;
 class Role extends AbstractEntity
 {
     /**
+     * @var string
      * @ORM\Column(
      *     type="string",
      *     name="name",

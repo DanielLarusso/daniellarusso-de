@@ -11,7 +11,7 @@ use Doctrine\ORM\Mapping as ORM;
 abstract class AbstractEntity
 {
     /**
-     * @var null|string $id
+     * @var null|string
      * @ORM\Id()
      * @ORM\GeneratedValue(strategy="UUID")
      * @ORM\Column(
@@ -21,7 +21,7 @@ abstract class AbstractEntity
     protected ?string $id;
 
     /**
-     * @var \DateTime $updatedAt
+     * @var \DateTime
      * @ORM\Column(
      *     type="datetime",
      *     name="updated_at",
@@ -31,7 +31,7 @@ abstract class AbstractEntity
     protected \DateTime $updatedAt;
 
     /**
-     * @var \DateTime $createdAt
+     * @var \DateTime
      * @ORM\Column(
      *     type="datetime",
      *     name="created_at",

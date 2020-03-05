@@ -2,8 +2,10 @@
 
 namespace DanielLarusso\Controller;
 
+use DanielLarusso\Entity\User\Confirmation\RegistrationConfirmation;
 use DanielLarusso\Entity\User\User;
 use DanielLarusso\Form\RegistrationFormType;
+use Doctrine\Persistence\ObjectManager;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\Request;
@@ -24,10 +26,11 @@ class SecurityController extends AbstractController
      * @param Request $request
      * @param UserPasswordEncoderInterface $passwordEncoder
      * @return Response
+     * @throws \Exception
      */
     public function register(Request $request, UserPasswordEncoderInterface $passwordEncoder): Response
     {
-        /** @var UserInterface $user */
+        /** @var User $user */
         $user = new User();
 
         /** @var FormInterface $form */
@@ -43,9 +46,21 @@ class SecurityController extends AbstractController
                 )
             );
 
-            $entityManager = $this->getDoctrine()->getManager();
-            $entityManager->persist($user);
-            $entityManager->flush();
+            /** @var RegistrationConfirmation $confirmation */
+            $confirmation = new RegistrationConfirmation();
+            $confirmation
+                ->setUser($user)
+                ->setHash(\bin2hex(\random_bytes(32)))
+                ->setExpiresAt((new \DateTime())->add(\DateInterval::createFromDateString('1 day')))
+            ;
+
+            $user->addConfirmation($confirmation);
+
+            /** @var ObjectManager $em */
+            $em = $this->getDoctrine()->getManager();
+            $em->persist($user);
+            $em->persist($confirmation);
+            $em->flush();
 
             // do anything else you need here, like send an email
 

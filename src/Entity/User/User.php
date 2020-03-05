@@ -3,8 +3,10 @@
 namespace DanielLarusso\Entity\User;
 
 use DanielLarusso\Entity\AbstractEntity;
+use DanielLarusso\Entity\User\Confirmation\Confirmation;
 use DanielLarusso\Entity\User\Security\Group as SecurityGroup;
 use DanielLarusso\Entity\User\Security\Role;
+use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
@@ -20,6 +22,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 class User extends AbstractEntity implements UserInterface
 {
     /**
+     * @var string
      * @ORM\Column(
      *     type="string",
      *     name="email",
@@ -61,8 +64,23 @@ class User extends AbstractEntity implements UserInterface
     private Collection $securityGroups;
 
     /**
+     * @var Collection
+     * @ORM\OneToMany(
+     *     targetEntity="DanielLarusso\Entity\User\Confirmation\Confirmation",
+     *     mappedBy="user",
+     *     cascade={"remove", "persist"},
+     *     orphanRemoval=true
+     * )
+     */
+    private Collection $confirmations;
+
+    /**
      * @var bool
-     * @ORM\Column(type="string")
+     * @ORM\Column(
+     *     type="boolean",
+     *     name="active",
+     *     nullable=false
+     * )
      */
     private bool $active = false;
 
@@ -75,6 +93,12 @@ class User extends AbstractEntity implements UserInterface
      * )
      */
     private ?\DateTime $lastLogin;
+
+    public function __construct()
+    {
+        $this->securityGroups = new ArrayCollection();
+        $this->confirmations = new ArrayCollection();
+    }
 
     /**
      * @return string
@@ -179,6 +203,46 @@ class User extends AbstractEntity implements UserInterface
 
         $this->getSecurityGroups()->removeElement($group);
         $group->removeUser($this);
+
+        return $this;
+    }
+
+    /**
+     * @return Collection
+     */
+    public function getConfirmations(): Collection
+    {
+        return $this->confirmations;
+    }
+
+    /**
+     * @param Confirmation $confirmation
+     * @return User
+     */
+    public function addConfirmation(Confirmation $confirmation): self
+    {
+        if ($this->getConfirmations()->contains($confirmation)) {
+            return $this;
+        }
+
+        $this->getConfirmations()->add($confirmation);
+        $confirmation->setUser($this);
+
+        return $this;
+    }
+
+    /**
+     * @param Confirmation $confirmation
+     * @return User
+     */
+    public function removeConfirmation(Confirmation $confirmation): self
+    {
+        if (! $this->getConfirmations()->contains($confirmation)) {
+            return $this;
+        }
+
+        $this->getConfirmations()->removeElement($confirmation);
+        $confirmation->setUser(null);
 
         return $this;
     }
