@@ -11,7 +11,7 @@ use Symfony\Component\Security\Core\User\UserInterface;
  * @package DanielLarusso\Entity\User\Confirmation
  * @ORM\Entity
  * @ORM\Table(
- *     name="user_confirmation_confirmation",
+ *     name="user_confirmation_confirmations",
  *     uniqueConstraints={
  *         @ORM\UniqueConstraint(
  *             name="unique_idx",
