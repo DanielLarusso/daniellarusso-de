@@ -12,6 +12,7 @@ use Doctrine\ORM\Mapping as ORM;
  * Note that this class extends Confirmation
  *
  * @ORM\Entity()
+ * @ORM\HasLifecycleCallbacks()
  */
 class RegistrationConfirmation extends Confirmation
 {
