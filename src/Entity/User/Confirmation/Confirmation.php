@@ -63,11 +63,11 @@ abstract class Confirmation extends AbstractEntity
      * @var string
      * @ORM\Column(
      *     type="string",
-     *     name="hash",
+     *     name="token",
      *     nullable=false
      * )
      */
-    protected string $hash = '';
+    protected string $token = '';
 
     /**
      * @var \DateTime
@@ -81,12 +81,12 @@ abstract class Confirmation extends AbstractEntity
     /**
      * @var bool
      * @ORM\Column(
-     *     type="string",
-     *     name="used",
+     *     type="boolean",
+     *     name="confirmed",
      *     nullable=false
      * )
      */
-    protected bool $used = false;
+    protected bool $confirmed = false;
 
     /**
      * @return string
@@ -129,18 +129,18 @@ abstract class Confirmation extends AbstractEntity
     /**
      * @return string
      */
-    public function getHash(): string
+    public function getToken(): string
     {
-        return $this->hash;
+        return $this->token;
     }
 
     /**
-     * @param string $hash
+     * @param string $token
      * @return Confirmation
      */
-    public function setHash(string $hash): self
+    public function setToken(string $token): self
     {
-        $this->hash = $hash;
+        $this->token = $token;
 
         return $this;
     }
@@ -167,18 +167,18 @@ abstract class Confirmation extends AbstractEntity
     /**
      * @return bool
      */
-    public function isUsed(): bool
+    public function isConfirmed(): bool
     {
-        return $this->used;
+        return $this->confirmed;
     }
 
     /**
-     * @param bool $used
+     * @param bool $confirmed
      * @return Confirmation
      */
-    public function setUsed(bool $used): self
+    public function setConfirmed(bool $confirmed): self
     {
-        $this->used = $used;
+        $this->confirmed = $confirmed;
 
         return $this;
     }

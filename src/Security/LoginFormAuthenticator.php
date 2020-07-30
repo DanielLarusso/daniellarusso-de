@@ -2,6 +2,7 @@
 
 namespace DanielLarusso\Security;
 
+use DanielLarusso\Entity\User\Confirmation\RegistrationConfirmation;
 use DanielLarusso\Entity\User\User;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
@@ -74,7 +75,7 @@ class LoginFormAuthenticator extends AbstractFormLoginAuthenticator implements P
      */
     public function supports(Request $request): bool
     {
-        return 'app_login' === $request->attributes->get('_route')
+        return 'security_login_action' === $request->attributes->get('_route')
             && $request->isMethod('POST');
     }
 
@@ -84,10 +85,9 @@ class LoginFormAuthenticator extends AbstractFormLoginAuthenticator implements P
      */
     public function getCredentials(Request $request): array
     {
-        /** @var array $credentials */
         $credentials = [
-            'email' => $request->request->get('email'),
-            'password' => $request->request->get('password'),
+            'email' => $request->request->get('_username'),
+            'password' => $request->request->get('_password'),
             'csrf_token' => $request->request->get('_csrf_token'),
         ];
 
@@ -103,7 +103,6 @@ class LoginFormAuthenticator extends AbstractFormLoginAuthenticator implements P
      */
     public function getUser($credentials, UserProviderInterface $userProvider): UserInterface
     {
-        /** @var CsrfToken $token */
         $token = new CsrfToken('authenticate', $credentials['csrf_token']);
         if (! $this->csrfTokenManager->isTokenValid($token)) {
             throw new InvalidCsrfTokenException();
@@ -115,6 +114,19 @@ class LoginFormAuthenticator extends AbstractFormLoginAuthenticator implements P
         if (! $user instanceof UserInterface) {
             // fail authentication with a custom error
             throw new CustomUserMessageAuthenticationException('Email could not be found.');
+        }
+
+        /** @var null|RegistrationConfirmation $registrationConfirmation */
+        $registrationConfirmation = $user->getConfirmations()->filter(static function ($confirmation) {
+            return $confirmation instanceof RegistrationConfirmation;
+        })->first();
+
+        if ($registrationConfirmation instanceof RegistrationConfirmation && ! $registrationConfirmation->isConfirmed()) {
+            throw new CustomUserMessageAuthenticationException('Please confirm your email first.');
+        }
+
+        if (! $user->isActive()) {
+            throw new CustomUserMessageAuthenticationException('Your account is deactivated.');
         }
 
         return $user;
@@ -153,8 +165,7 @@ class LoginFormAuthenticator extends AbstractFormLoginAuthenticator implements P
             return new RedirectResponse($targetPath);
         }
 
-        // For example : return new RedirectResponse($this->urlGenerator->generate('some_route'));
-        throw new \Exception('TODO: provide a valid redirect inside ' . __FILE__);
+        return new RedirectResponse($this->urlGenerator->generate('default_action'));
     }
 
     /**
@@ -162,6 +173,6 @@ class LoginFormAuthenticator extends AbstractFormLoginAuthenticator implements P
      */
     protected function getLoginUrl(): string
     {
-        return $this->urlGenerator->generate('app_login');
+        return $this->urlGenerator->generate('authentication_login_action');
     }
 }

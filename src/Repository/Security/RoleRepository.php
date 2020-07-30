@@ -1,8 +1,8 @@
-<?php
+<?php declare(strict_types=1);
 
-namespace DanielLarusso\Repository\User\Security;
+namespace DanielLarusso\Repository\Security;
 
-use DanielLarusso\Entity\User\Security\Role;
+use DanielLarusso\Entity\Security\Role;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Persistence\ManagerRegistry;
 

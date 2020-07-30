@@ -12,17 +12,18 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
-use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
 
 /**
- * Class SecurityController
+ * Class RegistrationController
  * @package DanielLarusso\Controller
+ * @Route("/registration")
  */
-class SecurityController extends AbstractController
+class RegistrationController extends AbstractController
 {
     /**
-     * @Route("/register", name="security_register_action")
+     * @Route("/", name="registration_index_action")
+     * @Route("/register", name="registration_register_action")
      * @param Request $request
      * @param UserPasswordEncoderInterface $passwordEncoder
      * @return Response
@@ -30,10 +31,8 @@ class SecurityController extends AbstractController
      */
     public function register(Request $request, UserPasswordEncoderInterface $passwordEncoder): Response
     {
-        /** @var User $user */
         $user = new User();
 
-        /** @var FormInterface $form */
         $form = $this->createForm(RegistrationFormType::class, $user);
         $form->handleRequest($request);
 
@@ -46,59 +45,46 @@ class SecurityController extends AbstractController
                 )
             );
 
-            /** @var RegistrationConfirmation $confirmation */
             $confirmation = new RegistrationConfirmation();
             $confirmation
                 ->setUser($user)
-                ->setHash(\bin2hex(\random_bytes(32)))
+                ->setToken(\bin2hex(\random_bytes(32)))
                 ->setExpiresAt((new \DateTime())->add(\DateInterval::createFromDateString('1 day')))
             ;
 
             $user->addConfirmation($confirmation);
 
-            /** @var ObjectManager $em */
             $em = $this->getDoctrine()->getManager();
             $em->persist($user);
             $em->persist($confirmation);
             $em->flush();
 
-            // do anything else you need here, like send an email
+            // todo: do anything else here, like send an email
 
-            return $this->redirectToRoute('security_login_action');
+            return $this->redirectToRoute('authentication_login_action');
         }
 
-        return $this->render('security/register.html.twig', [
+        return $this->render('registration/register.html.twig', [
             'registrationForm' => $form->createView(),
         ]);
     }
 
     /**
-     * @Route("/login", name="security_login_action")
-     * @param AuthenticationUtils $authenticationUtils
+     * @Route("/confirmation/{token}", name="registration_confirmation_action")
+     * @param RegistrationConfirmation $confirmation
      * @return Response
+     * @throws \Exception
      */
-    public function login(AuthenticationUtils $authenticationUtils): Response
+    public function confirmation(RegistrationConfirmation $confirmation): Response
     {
-        // if ($this->getUser()) {
-        //     return $this->redirectToRoute('target_path');
-        // }
+        if ($confirmation->getExpiresAt() < new \DateTime()) {
+            throw new \Exception('CONFIRMATION IS EXPIRED!');
+        }
 
-        // get the login error if there is one
-        $error = $authenticationUtils->getLastAuthenticationError();
-        // last username entered by the user
-        $lastUsername = $authenticationUtils->getLastUsername();
+        if ($confirmation->isConfirmed()) {
+            throw new \Exception('YOU\'VE ALREADY CONFIRMED YOUR EMAIL ADDRESS.');
+        }
 
-        return $this->render('security/login.html.twig', [
-            'last_username' => $lastUsername,
-            'error' => $error,
-        ]);
-    }
-
-    /**
-     * @Route("/logout", name="security_logout_action")
-     */
-    public function logout()
-    {
-        throw new \Exception('This method can be blank - it will be intercepted by the logout key on your firewall');
+        return $this->redirectToRoute('authentication_login_action');
     }
 }

@@ -1,0 +1,24 @@
+{% if type is same as('success') %}
+    {% set icon = 'thumbs-up' %}
+    {% set type = 'success' %}
+{% elseif type in ['danger', 'error'] %}
+    {% set icon = 'thumbs-down' %}
+    {% set type = 'danger' %}
+{% elseif type is same as('info') %}
+    {% set icon = 'info-circle' %}
+    {% set type = 'info' %}
+{% else %}
+    {% set icon = 'info-circle' %}
+    {% set type = 'dismisable' %}
+{% endif %}
+
+<div class="alert alert-{{ type }}" role="alert">
+    {#<span class="fa fa-{{ icon }} fa-fw"></span>#}
+    {% if type is not same as('dismisable') %}
+        <span class="badge badge-{{ type }}">{{ type }}</span>
+    {% endif %}
+    {{ message }}
+    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+    </button>
+</div>

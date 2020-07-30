@@ -3,9 +3,9 @@
 namespace DanielLarusso\Entity\User;
 
 use DanielLarusso\Entity\AbstractEntity;
+use DanielLarusso\Entity\Security\Group as SecurityGroup;
+use DanielLarusso\Entity\Security\Role;
 use DanielLarusso\Entity\User\Confirmation\Confirmation;
-use DanielLarusso\Entity\User\Security\Group as SecurityGroup;
-use DanielLarusso\Entity\User\Security\Role;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
@@ -48,7 +48,7 @@ class User extends AbstractEntity implements UserInterface
     /**
      * @var SecurityGroup[]|Collection
      * @ORM\ManyToMany(
-     *     targetEntity="DanielLarusso\Entity\User\Security\Group",
+     *     targetEntity="DanielLarusso\Entity\Security\Group",
      *     inversedBy="users"
      * )
      * @ORM\JoinTable(
